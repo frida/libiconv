@@ -35,7 +35,8 @@ static void emit_alias (FILE* out1, const char* alias, const char* c_name)
   fprintf(out1,", ei_%s\n", c_name);
 }
 
-static void emit_encoding (FILE* out1, FILE* out2, const char* const* names, size_t n, const char* c_name)
+static void emit_encoding (FILE* out1, FILE* out2, const char* const* names, size_t n, const char* c_name,
+                           const char* aliases_h_file_name)
 {
   fprintf(out2,"grep 'sizeof(\"");
   /* Output *names in upper case. */
@@ -50,7 +51,8 @@ static void emit_encoding (FILE* out1, FILE* out2, const char* const* names, siz
       putc(c, out2);
     }
   }
-  fprintf(out2,"\")' tmp.h | sed -e 's|^.*\\(stringpool_str[0-9]*\\).*$|  (int)(long)\\&((struct stringpool_t *)0)->\\1,|'\n");
+  fprintf(out2,"\")' %s | sed -e 's|^.*\\(stringpool_str[0-9]*\\).*$|  (int)(long)\\&((struct stringpool_t *)0)->\\1,|'\n",
+          aliases_h_file_name);
   for (; n > 0; names++, n--)
     emit_alias(out1, *names, c_name);
 }
@@ -60,17 +62,19 @@ int main (int argc, char* argv[])
   char* aliases_file_name;
   char* canonical_sh_file_name;
   char* canonical_local_sh_file_name;
+  char* aliases_h_file_name;
   FILE* aliases_file;
   FILE* canonical_sh_file;
 
-  if (argc != 4) {
-    fprintf(stderr, "Usage: genaliases aliases.gperf canonical.sh canonical_local.sh\n");
+  if (argc != 5) {
+    fprintf(stderr, "Usage: genaliases aliases.gperf canonical.sh canonical_local.sh aliases.h\n");
     exit(1);
   }
 
   aliases_file_name = argv[1];
   canonical_sh_file_name = argv[2];
   canonical_local_sh_file_name = argv[3];
+  aliases_h_file_name = argv[4];
 
   aliases_file = fopen(aliases_file_name, "w");
   if (aliases_file == NULL) {
@@ -93,7 +97,7 @@ int main (int argc, char* argv[])
 #define DEFENCODING(xxx_names,xxx,xxx_ifuncs1,xxx_ifuncs2,xxx_ofuncs1,xxx_ofuncs2) \
   {                                                           \
     static const char* const names[] = BRACIFY xxx_names;     \
-    emit_encoding(aliases_file,canonical_sh_file,names,sizeof(names)/sizeof(names[0]),#xxx); \
+    emit_encoding(aliases_file,canonical_sh_file,names,sizeof(names)/sizeof(names[0]),#xxx,aliases_h_file_name); \
   }
 #define BRACIFY(...) { __VA_ARGS__ }
 #define DEFALIAS(xxx_alias,xxx) emit_alias(aliases_file,xxx_alias,#xxx);
