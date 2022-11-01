@@ -1,10 +1,8 @@
 #!/bin/sh
-# Convenience script for regenerating all aclocal.m4, config.h.in, Makefile.in,
-# configure files with new versions of autoconf or automake.
-#
-# This script requires autoconf-2.63..2.71 and automake-1.11..1.16 in the PATH.
+# Convenience script for fetching auxiliary files that are omitted from
+# the version control repository of this package.
 
-# Copyright (C) 2003-2007, 2009-2010, 2016, 2020-2022 Free Software Foundation, Inc.
+# Copyright (C) 2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Prerequisite: ./autopull.sh
-# Usage:        ./autogen.sh
+# Usage: ./autopull.sh [--one-time]
+#
+# Options:
+#   --one-time          Optimize, assuming that the current directory will be
+#                       used to build the current version only and will be
+#                       thrown away afterwards.
 
-make -f Makefile.devel totally-clean all
+# Parse options.
+
+shallow=
+
+while :; do
+  case "$1" in
+    --one-time) shallow='--depth 1'; shift;;
+    *) break ;;
+  esac
+done
+
+
+./gitsub.sh pull $shallow || exit 1
+
+echo "$0: done.  Now you can run './autogen.sh'."

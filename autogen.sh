@@ -5,13 +5,10 @@
 # with new versions of autoconf or automake.
 #
 # This script requires autoconf-2.63..2.71 and automake-1.11..1.16 in the PATH.
-# If not used from a released tarball, it also requires either
-#   - the GNULIB_SRCDIR environment variable pointing to a gnulib checkout, or
-#   - a preceding invocation of './gitsub.sh pull'.
 # It also requires
 #   - the gperf program.
 
-# Copyright (C) 2003-2012, 2016, 2018-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2012, 2016, 2018-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +23,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# Prerequisite (if not used from a released tarball): either
+#   - the GNULIB_SRCDIR environment variable pointing to a gnulib checkout, or
+#   - a preceding invocation of './autopull.sh'.
+#
 # Usage: ./autogen.sh [--skip-gnulib]
+#
+# Options:
+#   --skip-gnulib       Avoid fetching files from Gnulib.
+#                       This option is useful
+#                       - when you are working from a released tarball (possibly
+#                         with modifications), or
+#                       - as a speedup, if the set of gnulib modules did not
+#                         change since the last time you ran this script.
 
 skip_gnulib=false
 while :; do
