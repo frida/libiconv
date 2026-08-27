@@ -27,7 +27,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if defined __APPLE__ && defined __MACH__ && HAVE_LANGINFO_CODESET
+#if defined __APPLE__ && defined __MACH__ && HAVE_LANGINFO_CODESET \
+    && __STDC_HOSTED__
 # define DARWIN7 /* Darwin 7 or newer, i.e. Mac OS X 10.3 or newer */
 #endif
 
