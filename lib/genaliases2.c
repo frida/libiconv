@@ -1,4 +1,4 @@
-/* Copyright (C) 1999-2003, 2005, 2008, 2012, 2022 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2026 Free Software Foundation, Inc.
    This file is part of the GNU LIBICONV Library.
 
    The GNU LIBICONV Library is free software; you can redistribute it
@@ -43,7 +43,11 @@ static void emit_alias (FILE* out1, const char* tag, const char* alias, const ch
 
 static void emit_encoding (FILE* out1, FILE* out2, const char* tag, const char* const* names, size_t n, const char* c_name)
 {
-  fprintf(out2,"  (int)(long)&((struct stringpool2_t *)0)->stringpool_%s_%u,\n",tag,counter);
+  /* Use a cast to 'size_t', as an approximation to 'uintptr_t'.  On most
+     platforms, the types 'long' and 'unsigned long' do work as well, but on
+     64-bit native Windows platforms, they don't have the same size as pointers
+     and therefore generate warnings.  */
+  fprintf(out2,"  (int)(size_t)&((struct stringpool2_t *)0)->stringpool_%s_%u,\n",tag,counter);
   for (; n > 0; names++, n--)
     emit_alias(out1, tag, *names, c_name);
 }
@@ -91,6 +95,10 @@ int main (int argc, char* argv[])
 #include "encodings_osf1.def"
 #endif
 #ifdef USE_DOS
+#include "encodings_dos.def"
+#endif
+#ifdef USE_OS2
+#include "encodings_aix.def"
 #include "encodings_dos.def"
 #endif
 #ifdef USE_ZOS

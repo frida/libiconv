@@ -4,11 +4,11 @@
 # also regenerates all aclocal.m4, config.h.in, Makefile.in, configure files
 # with new versions of autoconf or automake.
 #
-# This script requires autoconf-2.63..2.71 and automake-1.11..1.16 in the PATH.
+# This script requires autoconf-2.63..2.73 and automake-1.11..1.18 in the PATH.
 # It also requires
 #   - the gperf program.
 
-# Copyright (C) 2003-2012, 2016, 2018-2022 Free Software Foundation, Inc.
+# Copyright (C) 2003-2026 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,22 @@ done
 
 # ========== Copy files from gnulib, automake, or the internet. ==========
 
+# Find GNU Make.
+if test -n "${MAKE}" && test "`${MAKE} --version 2>/dev/null | sed -e 's/ [0-9].*//' -e 1q`" = 'GNU Make'; then
+  GMAKE="${MAKE}"
+else
+  if test "`make --version 2>/dev/null | sed -e 's/ [0-9].*//' -e 1q`" = 'GNU Make'; then
+    GMAKE=make
+  else
+    if test "`gmake --version 2>/dev/null | sed -e 's/ [0-9].*//' -e 1q`" = 'GNU Make'; then
+      GMAKE=gmake
+    else
+      echo "*** - GNU Make not found" 1>&2
+      exit 1
+    fi
+  fi
+fi
+
 if test $skip_gnulib = false; then
   if test -n "$GNULIB_SRCDIR"; then
     test -d "$GNULIB_SRCDIR" || {
@@ -70,9 +86,9 @@ if test $skip_gnulib = false; then
     $GNULIB_TOOL --copy-file $file || exit $?
     chmod a+x $file || exit $?
   done
-  make -f Makefile.devel \
-       gnulib-clean srclib/Makefile.gnulib gnulib-imported-files srclib/Makefile.in \
-       GNULIB_TOOL="$GNULIB_TOOL"
+  $GMAKE -f Makefile.devel \
+         gnulib-clean srclib/Makefile.gnulib gnulib-imported-files srclib/Makefile.in \
+         GNULIB_TOOL="$GNULIB_TOOL"
 fi
 
 # Copy files into the libcharset subpackage, so that libcharset/autogen.sh
@@ -83,13 +99,23 @@ done
 for file in config.guess config.libpath config.sub install-sh libtool-reloc mkinstalldirs; do
   cp -p build-aux/$file libcharset/build-aux/$file || exit $?
 done
-for file in codeset.m4 fcntl-o.m4 lib-ld.m4 relocatable.m4 relocatable-lib.m4 visibility.m4; do
+for file in \
+  build-to-host.m4 \
+  codeset.m4 \
+  fcntl-o.m4 \
+  host-cpu-c-abi.m4 \
+  lib-ld.m4 \
+  libdl.m4 \
+  relocatable.m4 \
+  relocatable-lib.m4 \
+  visibility.m4 \
+; do
   cp -p srcm4/$file libcharset/m4/$file || exit $?
 done
 
 # ========== Generate files. ==========
 
-make -f Makefile.devel totally-clean all || exit $?
+$GMAKE -f Makefile.devel totally-clean all || exit $?
 
 (cd libcharset
  ./autogen.sh || exit $?
